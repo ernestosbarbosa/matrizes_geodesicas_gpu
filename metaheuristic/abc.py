@@ -3,6 +3,12 @@ Created on 19 de set de 2017
 
 @author: Ismael Koch
 This ABC implementation only works for minimization problems
+
+Changed on 4 de dez de 2017
+
+@author: Blanda, Diego e Ernesto
+ABC implementation with CUDA
+
 '''
 from copy import deepcopy
 
@@ -10,6 +16,8 @@ import numpy
 
 from metaheuristic.metaheuristic import Metaheuristic
 
+# @jit annotation for Just in Time compilation in CUDA
+from numba import jit
 
 class ABC( Metaheuristic ):
 
@@ -53,56 +61,7 @@ class ABC( Metaheuristic ):
             self.result_of_foods[ food_to_replace_index ] = self.function( self.foods[ food_to_replace_index ] )
             self.fitness_of_foods[ food_to_replace_index ] = self.evaluate_fitness( self.result_of_foods[ food_to_replace_index ] )
             self.memorize_best_solution()
-    
-    def onlooker_bees_phase( self ):
-        t = 0
-        i = 0
-        while( t < self.food_amount ) :
-            if numpy.random.uniform( 0, 1 ) < self.probabilities[i] :
-                t += 1
-                phi = numpy.random.uniform( -1, 1 )
-                j = numpy.random.randint( 0, self.problem_dimension )
-                k = numpy.random.randint( 0, self.food_amount )
-                while( i == k ) :
-                    k = numpy.random.randint( 0, self.food_amount )
-                v = deepcopy( self.foods[i] )
-                v[j] = self.foods[i][j] + phi * ( self.foods[i][j] - self.foods[k][j] )  # change one parameter (j) for the food (v)
-                v[j] = self.check_limits( v[j], j )
-                v_solution = self.function( v ) 
-                v_fitness = self.evaluate_fitness( v_solution )
-                if( v_fitness > self.fitness_of_foods[i] ) : # we improved the solution
-                    self.improv_attempt_counter[i] = 0
-                    self.foods[i] = v
-                    self.result_of_foods[i] = v_solution
-                    self.fitness_of_foods[i] = v_fitness
-                else :
-                    self.improv_attempt_counter[i] += 1
-            i = i + 1 if i < ( self.food_amount - 1 ) else 0
-            
-    def evaluate_probabilities( self ) :
-        fitness_sum = sum( self.fitness_of_foods )
-        for i in range( self.food_amount ) :
-            self.probabilities[i] = self.fitness_of_foods[i] / fitness_sum
-    
-    def employed_bees_phase( self ):
-        for i in range( self.food_amount ) :
-            phi = numpy.random.uniform( -1, 1 )
-            j = numpy.random.randint( 0, self.problem_dimension )
-            k = numpy.random.randint( 0, self.food_amount )
-            while( i == k ) :
-                k = numpy.random.randint( 0, self.food_amount )
-            v = deepcopy( self.foods[i] )
-            v[j] = self.foods[i][j] + phi * ( self.foods[i][j] - self.foods[k][j] )  # change one parameter (j) for the food (v)
-            v[j] = self.check_limits( v[j], j )
-            v_result = self.function( v ) 
-            v_fitness = self.evaluate_fitness( v_result )
-            if v_fitness > self.fitness_of_foods[i] : # we improved the solution
-                self.improv_attempt_counter[i] = 0
-                self.foods[i] = v
-                self.result_of_foods[i] = v_result
-                self.fitness_of_foods[i] = v_fitness
-            else :
-                self.improv_attempt_counter[i] += 1
+
 
     def check_limits( self, value, dimension ): # check limits based on search space
         if value < self.min[ dimension ] : 
@@ -111,16 +70,6 @@ class ABC( Metaheuristic ):
             return self.max[ dimension ]
         else :
             return value
-        
-    def generate_new_food( self, i ) :
-        for j in range( self.problem_dimension ) :
-            self.foods[i][j] = numpy.random.uniform( self.min[ j ], self.max[ j ] )
-        self.improv_attempt_counter[i] = 0
-
-    def evaluate_solutions( self ) :
-        for i, f in enumerate( self.foods ) :
-            self.result_of_foods[ i ] = self.function( f )
-            self.fitness_of_foods[ i ] = self.evaluate_fitness( self.result_of_foods[ i ] ) 
 
     def memorize_best_solution( self ) :
         max_fitness_index = ( self.fitness_of_foods ).index( max( self.fitness_of_foods ) )
@@ -211,3 +160,71 @@ class ABC( Metaheuristic ):
     @best_solution_overall.setter
     def best_solution_overall( self, best_solution_overall ):
         self._best_solution_overall = best_solution_overall
+
+    #CUDA JIT
+
+    @jit    
+    def onlooker_bees_phase( self ):
+        t = 0
+        i = 0
+        while( t < self.food_amount ) :
+            if numpy.random.uniform( 0, 1 ) < self.probabilities[i] :
+                t += 1
+                phi = numpy.random.uniform( -1, 1 )
+                j = numpy.random.randint( 0, self.problem_dimension )
+                k = numpy.random.randint( 0, self.food_amount )
+                while( i == k ) :
+                    k = numpy.random.randint( 0, self.food_amount )
+                v = deepcopy( self.foods[i] )
+                v[j] = self.foods[i][j] + phi * ( self.foods[i][j] - self.foods[k][j] )  # change one parameter (j) for the food (v)
+                v[j] = self.check_limits( v[j], j )
+                v_solution = self.function( v ) 
+                v_fitness = self.evaluate_fitness( v_solution )
+                if( v_fitness > self.fitness_of_foods[i] ) : # we improved the solution
+                    self.improv_attempt_counter[i] = 0
+                    self.foods[i] = v
+                    self.result_of_foods[i] = v_solution
+                    self.fitness_of_foods[i] = v_fitness
+                else :
+                    self.improv_attempt_counter[i] += 1
+            i = i + 1 if i < ( self.food_amount - 1 ) else 0
+            
+    @jit
+    def evaluate_probabilities( self ) :
+        fitness_sum = sum( self.fitness_of_foods )
+        for i in range( self.food_amount ) :
+            self.probabilities[i] = self.fitness_of_foods[i] / fitness_sum
+
+    @jit    
+    def employed_bees_phase( self ):
+        for i in range( self.food_amount ) :
+            phi = numpy.random.uniform( -1, 1 )
+            j = numpy.random.randint( 0, self.problem_dimension )
+            k = numpy.random.randint( 0, self.food_amount )
+            while( i == k ) :
+                k = numpy.random.randint( 0, self.food_amount )
+            v = deepcopy( self.foods[i] )
+            v[j] = self.foods[i][j] + phi * ( self.foods[i][j] - self.foods[k][j] )  # change one parameter (j) for the food (v)
+            v[j] = self.check_limits( v[j], j )
+            v_result = self.function( v ) 
+            v_fitness = self.evaluate_fitness( v_result )
+            if v_fitness > self.fitness_of_foods[i] : # we improved the solution
+                self.improv_attempt_counter[i] = 0
+                self.foods[i] = v
+                self.result_of_foods[i] = v_result
+                self.fitness_of_foods[i] = v_fitness
+            else :
+                self.improv_attempt_counter[i] += 1
+
+    @jit        
+    def generate_new_food( self, i ) :
+        for j in range( self.problem_dimension ) :
+            self.foods[i][j] = numpy.random.uniform( self.min[ j ], self.max[ j ] )
+        self.improv_attempt_counter[i] = 0
+
+    @jit
+    def evaluate_solutions( self ) :
+        for i, f in enumerate( self.foods ) :
+            self.result_of_foods[ i ] = self.function( f )
+            self.fitness_of_foods[ i ] = self.evaluate_fitness( self.result_of_foods[ i ] ) 
+    

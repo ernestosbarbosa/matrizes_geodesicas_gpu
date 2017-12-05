@@ -2,9 +2,15 @@
 Created on 14 de ago de 2017
 
 @author: Isma
+
+Changed on 4 de dez de 2017
+
+@author: Blanda, Diego e Ernesto
+Metaheuristic implementation with CUDA
+
 '''
 
-from numba import vectorize, float64
+from numba import vectorize, float64, float32
 
 class Metaheuristic():
 
@@ -105,7 +111,10 @@ class Metaheuristic():
         self._number_of_fitness_evaluation = number_of_fitness_evaluation
 
     # CUDA Functions
-    @vectorize([float64(float64)])
+    @vectorize([
+        float32(float32),
+        float64(float64)
+    ])
     def ret_abs(value):
         return 1 / ( 1 + abs( value ) )
 
