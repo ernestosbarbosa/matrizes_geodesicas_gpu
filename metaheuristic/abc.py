@@ -17,7 +17,7 @@ import numpy
 from metaheuristic.metaheuristic import Metaheuristic
 
 # @jit annotation for Just in Time compilation in CUDA
-from numba import jit
+from numba import jit, vectorize, float32, float64
 
 class ABC( Metaheuristic ):
 
@@ -176,7 +176,8 @@ class ABC( Metaheuristic ):
                 while( i == k ) :
                     k = numpy.random.randint( 0, self.food_amount )
                 v = deepcopy( self.foods[i] )
-                v[j] = self.foods[i][j] + phi * ( self.foods[i][j] - self.foods[k][j] )  # change one parameter (j) for the food (v)
+                v[j] = self.get_food(self.foods[i][j], self.foods[k][j], phi)
+#                v[j] = self.foods[i][j] + phi * ( self.foods[i][j] - self.foods[k][j] )  # change one parameter (j) for the food (v)
                 v[j] = self.check_limits( v[j], j )
                 v_solution = self.function( v ) 
                 v_fitness = self.evaluate_fitness( v_solution )
@@ -204,7 +205,8 @@ class ABC( Metaheuristic ):
             while( i == k ) :
                 k = numpy.random.randint( 0, self.food_amount )
             v = deepcopy( self.foods[i] )
-            v[j] = self.foods[i][j] + phi * ( self.foods[i][j] - self.foods[k][j] )  # change one parameter (j) for the food (v)
+#            v[j] = self.foods[i][j] + phi * ( self.foods[i][j] - self.foods[k][j] )  # change one parameter (j) for the food (v)
+            v[j] = self.get_food(self.foods[i][j], self.foods[k][j], phi )  # change one parameter (j) for the food (v)
             v[j] = self.check_limits( v[j], j )
             v_result = self.function( v ) 
             v_fitness = self.evaluate_fitness( v_result )
@@ -227,4 +229,10 @@ class ABC( Metaheuristic ):
         for i, f in enumerate( self.foods ) :
             self.result_of_foods[ i ] = self.function( f )
             self.fitness_of_foods[ i ] = self.evaluate_fitness( self.result_of_foods[ i ] ) 
-    
+
+    @vectorize([
+        float32(float32, float32, float32),
+        float64(float64, float64, float64)
+    ])
+    def get_food(a, b, phi):
+        return a + phi * ( a - b )  # change one parameter (j) for the food (v)
