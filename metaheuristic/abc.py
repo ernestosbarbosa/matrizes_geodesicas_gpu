@@ -1,15 +1,3 @@
-'''
-Created on 19 de set de 2017
-
-@author: Ismael Koch
-This ABC implementation only works for minimization problems
-
-Changed on 4 de dez de 2017
-
-@author: Blanda, Diego e Ernesto
-ABC implementation with CUDA
-
-'''
 from copy import deepcopy
 
 import numpy
@@ -20,7 +8,7 @@ from metaheuristic.metaheuristic import Metaheuristic
 from numba import jit, vectorize, float32, float64
 
 class ABC( Metaheuristic ):
-
+    
     def run( self ) :
         self._best_result_overall = False
         self._best_solution_overall = False
@@ -62,7 +50,6 @@ class ABC( Metaheuristic ):
             self.fitness_of_foods[ food_to_replace_index ] = self.evaluate_fitness( self.result_of_foods[ food_to_replace_index ] )
             self.memorize_best_solution()
 
-
     def check_limits( self, value, dimension ): # check limits based on search space
         if value < self.min[ dimension ] : 
             return self.min[ dimension ]
@@ -70,7 +57,7 @@ class ABC( Metaheuristic ):
             return self.max[ dimension ]
         else :
             return value
-
+        
     def memorize_best_solution( self ) :
         max_fitness_index = ( self.fitness_of_foods ).index( max( self.fitness_of_foods ) )
         self.best_solution = self.foods[ max_fitness_index ]
@@ -161,7 +148,7 @@ class ABC( Metaheuristic ):
     def best_solution_overall( self, best_solution_overall ):
         self._best_solution_overall = best_solution_overall
 
-    #CUDA JIT
+   #CUDA JIT
 
     @jit    
     def onlooker_bees_phase( self ):
