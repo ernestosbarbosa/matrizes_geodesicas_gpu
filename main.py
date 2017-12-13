@@ -64,7 +64,7 @@ def function_second_order_design( solution_P ) :  # a funcao que calcula o resul
     #matrix_Qxm = dot_py( matrix_ATP, matrix_A )
     matrix_Qxm = np.dot( matrix_ATP, matrix_A )
     #matrix_Qxm2 = matrix_mult( matrix_ATP, matrix_A )  
-    np.savetxt('resultDot.txt', matrix_Qxm, fmt='%.2f')
+    #np.savetxt('resultDot.txt', matrix_Qxm, fmt='%.2f')
     #print(matrix_Qxm[0][0])
     #print(matrix_Qxm2[0][0])
 
@@ -74,14 +74,14 @@ def function_second_order_design( solution_P ) :  # a funcao que calcula o resul
 
     #print(matrix_QxmT)
 
-    matrix_Qxm_QxmT = dot_py( matrix_Qxm, matrix_QxmT )
-    #matrix_Qxm_QxmT = np.dot( matrix_Qxm, matrix_QxmT )
+    #matrix_Qxm_QxmT = dot_py( matrix_Qxm, matrix_QxmT )
+    matrix_Qxm_QxmT = np.dot( matrix_Qxm, matrix_QxmT )
     #matrix_Qxm_QxmT = matrix_mult( matrix_Qxm, matrix_QxmT )  
 
     inv_matrix_Qxm_QxmT = np.linalg.inv( matrix_Qxm_QxmT )  # calcula a inversa da matriz
 
-    matrix_QRxm = dot_py( matrix_QxmT, inv_matrix_Qxm_QxmT )
-    #matrix_QRxm = np.dot( matrix_QxmT, inv_matrix_Qxm_QxmT )
+    #matrix_QRxm = dot_py( matrix_QxmT, inv_matrix_Qxm_QxmT )
+    matrix_QRxm = np.dot( matrix_QxmT, inv_matrix_Qxm_QxmT )
     #matrix_QRxm = matrix_mult( matrix_QxmT )  
     #print("--- %s seconds ---" % (time.time() - start_time))
     
@@ -151,7 +151,6 @@ def matrixTranspose(anArray):
         for tt in range(len(anArray[t])):
             transposed[t][tt] = anArray[tt][t]
     return transposed
-
 
 if __name__ == '__main__':
     start_time = time.time()

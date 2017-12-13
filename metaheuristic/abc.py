@@ -1,10 +1,6 @@
-from copy import deepcopy
-
 import numpy
-
+from copy import deepcopy
 from metaheuristic.metaheuristic import Metaheuristic
-
-# @jit annotation for Just in Time compilation in CUDA
 from numba import jit, vectorize, float32, float64
 
 class ABC( Metaheuristic ):
@@ -12,10 +8,10 @@ class ABC( Metaheuristic ):
     def run( self ) :
         self._best_result_overall = False
         self._best_solution_overall = False
-        # here, number_of_candidate_solutions is the total colony size
+
         self._solution_abandonment_limit = int( ( self.number_of_candidate_solutions / 2 ) * self.problem_dimension )
         self._food_amount = int( self.number_of_candidate_solutions / 2 )
-        # initialize arrays positions
+
         self._result_of_foods = [ 0 for _ in range( self.food_amount ) ]
         self._fitness_of_foods = [ 0 for _ in range( self.food_amount ) ]
         self._foods = []

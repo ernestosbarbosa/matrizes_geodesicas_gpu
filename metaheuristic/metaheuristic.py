@@ -23,7 +23,6 @@ class Metaheuristic():
         self.number_of_fitness_evaluation += 1
         return self.ret_abs(value)
 
-    # save the variable containing the function to be executed by the MH algorithm
     def set_function( self, function ):
         self.function = function
 
