@@ -63,7 +63,7 @@ def function_second_order_design( solution_P ) :  # a funcao que calcula o resul
     #start_time = time.time()
     #matrix_Qxm = dot_py( matrix_ATP, matrix_A )
     matrix_Qxm = np.dot( matrix_ATP, matrix_A )
-    matrix_Qxm2 = matrix_mult( matrix_ATP, matrix_A )  
+    #matrix_Qxm2 = matrix_mult( matrix_ATP, matrix_A )  
     np.savetxt('resultDot.txt', matrix_Qxm, fmt='%.2f')
     #print(matrix_Qxm[0][0])
     #print(matrix_Qxm2[0][0])
